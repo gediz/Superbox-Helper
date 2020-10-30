@@ -53,9 +53,10 @@ class Superbox:
 
     def print_input_args(self):
         print(art)
-        log.info('Router IP:\t{}'.format(self.ip))
-        log.info('Username:\t{}'.format(self.user))
-        log.info('Password:\t{}'.format(self.pw))
+        log.info('Input arguments')
+        log.info('\tRouter IP: {}'.format(self.ip))
+        log.info('\tUsername: {}'.format(self.user))
+        log.info('\tPassword: {}'.format(self.pw))
 
     def initiate_session(self):
         '''Initiate a requests session and execute a basic test.'''
@@ -64,6 +65,7 @@ class Superbox:
 
         self.s = requests.Session()
 
+        # a dumb way to test connection
         r = self.s.get(self.router_URL)
         r.raise_for_status()
 

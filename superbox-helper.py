@@ -19,6 +19,7 @@ parser.add_argument('--verbose', '-v', action='count', default=0)
 
 args = parser.parse_args()
 
+# https://patorjk.com/software/taag/#p=display&h=3&v=3&f=Slant
 art = r'''
    _____                       __
   / ___/__  ______  ___  _____/ /_  ____  _  __
@@ -42,16 +43,15 @@ class Superbox:
 
         if (self.verbose):
             log.basicConfig(
-                format="[%(levelname)s] %(message)s", level=log.INFO)
+                format='[%(levelname)s] %(message)s', level=log.INFO)
             self.print_input_args()
         else:
-            log.basicConfig(format="[%(levelname)s] %(message)s")
+            log.basicConfig(format='[%(levelname)s] %(message)s')
 
         self.initiate_session()
         self.authenticate()
 
     def print_input_args(self):
-        # https://patorjk.com/software/taag/#p=display&h=3&v=3&f=Slant
         print(art)
         log.info('Router IP:\t{}'.format(self.ip))
         log.info('Username:\t{}'.format(self.user))
@@ -84,5 +84,5 @@ def get_epoch():
 
 superbox = Superbox(args.router_ip, args.username, args.password, args.verbose)
 
-if __name__ == "__main__":
-    print("hello?")
+if __name__ == '__main__':
+    print('hello?')

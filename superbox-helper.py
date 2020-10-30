@@ -5,6 +5,7 @@ import logging as log
 from time import time_ns
 import requests
 from hashlib import md5
+from base64 import b64encode
 
 p_desc = 'Automates some basic functionality of Turkcell Superbox'
 p_fmt = argparse.ArgumentDefaultsHelpFormatter
@@ -121,15 +122,21 @@ class Superbox:
 
     def authenticate(self):
         '''Do the authentication'''
-        self.login_cookie = None
-        self.router_URL = 'http://{}'.format(self.ip)
+        self.AD = self.compose_AD()
 
-        self.s = requests.Session()
+        self.s.headers.update(
+            {'Referer': 'http://{}/index.html'.format(self.ip),
+             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'})
 
-        r = self.s.get(self.router_URL)
-        r.raise_for_status()
+        pw_b64 = b64encode(self.pw.encode()).decode()
 
+        payload = {'isTest': 'false', 'goformId': 'LOGIN_MULTI_USER',
+                   'user': self.user, 'password': pw_b64, 'AD': self.AD}
+        r = self.s.post('http://{}/goform/goform_set_cmd_process'.format(self.ip),
+                        data=payload)
 
+        auth_result = r.json()['result']   
+        print('Authentication result: {}'.format(auth_result))
 
 
 superbox = Superbox(args.router_ip, args.username, args.password, args.verbose)

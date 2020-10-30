@@ -67,6 +67,9 @@ class Superbox:
         r = self.s.get(self.router_URL)
         r.raise_for_status()
 
+    def get_epoch(self):
+        return(int(time_ns() / 1000000))
+
     def authenticate(self):
         '''Do the authentication'''
         self.login_cookie = None
@@ -78,8 +81,6 @@ class Superbox:
         r.raise_for_status()
 
 
-def get_epoch():
-    return(int(time_ns() / 1000000))
 
 
 superbox = Superbox(args.router_ip, args.username, args.password, args.verbose)

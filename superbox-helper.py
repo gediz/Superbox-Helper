@@ -4,6 +4,7 @@ import argparse
 import logging as log
 from time import time_ns
 import requests
+from hashlib import md5
 
 p_desc = 'Automates some basic functionality of Turkcell Superbox'
 p_fmt = argparse.ArgumentDefaultsHelpFormatter
@@ -101,6 +102,22 @@ class Superbox:
                 log.info('\t{}: {}'.format(command, json_response[command]))
 
         return(json_response)
+
+    def compose_AD(self):
+        '''Calculate AD digest after retrieving the required parameters'''
+        params = self.get_cmd('RD', 'wa_inner_version', 'cr_version')
+
+        RD = params['RD']
+        rd0 = params['wa_inner_version']
+        rd1 = params['cr_version']
+
+        rd = rd0 + rd1
+
+        rd_md5 = md5(rd.encode()).hexdigest()
+        ad = rd_md5 + RD
+        AD = md5(ad.encode()).hexdigest()
+
+        return(AD)
 
     def authenticate(self):
         '''Do the authentication'''

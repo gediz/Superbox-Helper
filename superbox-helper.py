@@ -72,6 +72,36 @@ class Superbox:
     def get_epoch(self):
         return(int(time_ns() / 1000000))
 
+    def get_cmd(self, cmd, *cmds):
+        # router return empty response for some parameters
+        # when Referer is omitted from the headers
+        self.s.headers.update(
+            {'Referer': 'http://{}/index.html'.format(self.ip)})
+
+        # concatenate commands into one variable if there's
+        # more than one and 'multi_data' parameter should be
+        # set to '1' when multiple values are requested.
+        multi_data = None
+        if cmds:
+            multi_data = '1'
+            cmd += ',{}'.format(','.join(cmds))
+
+        # 'isTest' and '_' parameters were always present while sending
+        # a cmd request so I thought it's better to include them
+        payload = {'isTest': 'false', '_': self.get_epoch(),
+                   'multi_data': multi_data, 'cmd': cmd}
+        r = self.s.get('http://{}/goform/goform_get_cmd_process'.format(self.ip),
+                       params=payload)
+
+        json_response = r.json()
+
+        if json_response:
+            log.info('get_cmd()')
+            for command in cmd.split(','):
+                log.info('\t{}: {}'.format(command, json_response[command]))
+
+        return(json_response)
+
     def authenticate(self):
         '''Do the authentication'''
         self.login_cookie = None

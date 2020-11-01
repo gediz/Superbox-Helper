@@ -50,8 +50,13 @@ class Superbox:
         else:
             log.basicConfig(format='[%(levelname)s] %(message)s')
 
-        self.initiate_session()
-        self.authenticate()
+        self.logged_in = self.login()
+
+        if self.logged_in:
+            log.info('Successfully logged in.')
+        else:
+            log.error('Could not log in.')
+
     class AuthenticationResult:
         '''Possible values for \"LOGIN_MULTI_USER\"
 
@@ -161,8 +166,40 @@ class Superbox:
         auth_result = r.json()['result']
         return(auth_result)
 
+    def login(self):
+        self.initiate_session()
+        auth_result = self.authenticate()
 
-superbox = Superbox(args.router_ip, args.username, args.password, args.verbose)
+        login_verified = False
+
+        if auth_result == self.AuthenticationResult.invalid_json_key:
+            log.error('Authentication failed: Invalid JSON key.')
+        elif auth_result == self.AuthenticationResult.missing_post_parameter:
+            log.error('Authentication failed: Missing POST parameter(s)')
+            log.error('Please check "payload" variable of "authenticate()"')
+        elif auth_result == self.AuthenticationResult.success:
+            log.info('Authentication succeeded.')
+        elif auth_result == self.AuthenticationResult.wrong_credentials_or_temporary_ban:
+            log.error(
+                'Authentication failed: Invalid credentials or temporary ban')
+            log.error('Either wrong credentials are provided or too many failed')
+            log.error('login attempts caused a temporary login ban.')
+        else:
+            log.error(
+                'Authentication failed: Unexpected result ({})'.format(auth_result))
+
+        if auth_result == self.AuthenticationResult.success:
+            # "wifi_lbd_enable" returns an empty response before login and
+            # "1" after login, so we can use it for a lame login verification.
+            login_verified = self.get_cmd('wifi_lbd_enable') == '1'
+
+            if not login_verified:
+                log.warning('Could not verify login.')
+                log.warning('This may be nonsense but be careful.')
+
+            return(True)
+        else:
+            return(False)
 
 if __name__ == '__main__':
     print('hello?')

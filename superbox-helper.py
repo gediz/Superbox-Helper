@@ -52,6 +52,15 @@ class Superbox:
 
         self.initiate_session()
         self.authenticate()
+    class AuthenticationResult:
+        '''Possible values for \"LOGIN_MULTI_USER\"
+
+        Found by trial and error. These are not confirmed values.
+        There may be more status codes.'''
+        invalid_json_key = 'null'
+        missing_post_parameter = 'failure'
+        success = '0'
+        wrong_credentials_or_temporary_ban = '1'
 
     def print_input_args(self):
         print(art)

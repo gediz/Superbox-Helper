@@ -110,7 +110,11 @@ class Superbox:
             for command in cmd.split(','):
                 log.info('\t{}: {}'.format(command, json_response[command]))
 
-        return(json_response)
+        if multi_data:
+            return(json_response)
+        else:
+            # no need send a json object when only one parameter is requested
+            return(json_response[cmd])
 
     def compose_AD(self):
         '''Calculate AD digest after retrieving the required parameters'''

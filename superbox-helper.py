@@ -149,8 +149,8 @@ class Superbox:
         r = self.s.post('http://{}/goform/goform_set_cmd_process'.format(self.ip),
                         data=payload)
 
-        auth_result = r.json()['result']   
-        print('Authentication result: {}'.format(auth_result))
+        auth_result = r.json()['result']
+        return(auth_result)
 
 
 superbox = Superbox(args.router_ip, args.username, args.password, args.verbose)

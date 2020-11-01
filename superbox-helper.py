@@ -68,7 +68,14 @@ class Superbox:
         self.s = requests.Session()
 
         # a dumb way to test connection
+        log.info('Test connection by fetching router index page...')
         r = self.s.get(self.router_URL)
+
+        if r.status_code == requests.codes.ok:
+            log.info('Successfully fetched index page of the router.')
+        else:
+            log.error('Could not get index page of the router.')
+
         r.raise_for_status()
 
     def get_epoch(self):
@@ -89,7 +96,8 @@ class Superbox:
             cmd += ',{}'.format(','.join(cmds))
 
         # 'isTest' and '_' parameters were always present while sending
-        # a cmd request so I thought it's better to include them
+        # a cmd request so I thought it's better to include them. removing
+        # them did no harm but I do not want any surprise happen.
         payload = {'isTest': 'false', '_': self.get_epoch(),
                    'multi_data': multi_data, 'cmd': cmd}
         r = self.s.get('http://{}/goform/goform_get_cmd_process'.format(self.ip),
@@ -111,6 +119,8 @@ class Superbox:
         RD = params['RD']
         rd0 = params['wa_inner_version']
         rd1 = params['cr_version']
+
+        log.info('Get required parameters and compose AD digest...')
 
         rd = rd0 + rd1
 

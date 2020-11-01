@@ -132,6 +132,7 @@ class Superbox:
 
     def compose_AD(self):
         '''Calculate AD digest after retrieving the required parameters'''
+
         params = self.get_cmd('RD', 'wa_inner_version', 'cr_version')
 
         RD = params['RD']
@@ -201,5 +202,11 @@ class Superbox:
         else:
             return(False)
 
+    def get_all_sms(self):
+        return(1)
+
+
 if __name__ == '__main__':
-    print('hello?')
+    superbox = Superbox(args.router_ip, args.username,
+                        args.password, args.verbose)
+    messages = superbox.get_all_sms()

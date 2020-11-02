@@ -6,6 +6,8 @@ from time import time_ns
 import requests
 from hashlib import md5
 from base64 import b64encode
+from simplejson.errors import JSONDecodeError
+from json import loads
 
 p_desc = 'Automates some basic functionality of Turkcell Superbox'
 p_fmt = argparse.ArgumentDefaultsHelpFormatter
@@ -95,7 +97,7 @@ class Superbox:
     def get_epoch(self):
         return(int(time_ns() / 1000000))
 
-    def get_cmd(self, cmd, *cmds):
+    def get_cmd(self, cmds: set, payload=None):
         # router return empty response for some parameters
         # when Referer is omitted from the headers
         self.s.headers.update(
@@ -104,27 +106,45 @@ class Superbox:
         # concatenate commands into one variable if there's
         # more than one and 'multi_data' parameter should be
         # set to '1' when multiple values are requested.
-        multi_data = None
-        if cmds:
+        if len(cmds) > 1:
+            cmd = ','.join(cmds)
             multi_data = '1'
-            cmd += ',{}'.format(','.join(cmds))
+        else:
+            (cmd,) = cmds
+            multi_data = None
 
         # 'isTest' and '_' parameters were always present while sending
-        # a cmd request so I thought it's better to include them. removing
-        # them did no harm but I do not want any surprise happen.
-        payload = {'isTest': 'false', '_': self.get_epoch(),
-                   'multi_data': multi_data, 'cmd': cmd}
+        # a standard cmd request so I thought it's better to include them.
+        # removing them did no harm but I do not want any surprise happen.
+        default_payload = {'multi_data': multi_data,
+                           'cmd': cmd, 'isTest': 'false', '_': self.get_epoch()}
+
+        if payload == None:
+            standart_request = True
+            payload = default_payload
+        else:
+            standart_request = False
+            payload.update(default_payload)
+
         r = self.s.get('http://{}/goform/goform_get_cmd_process'.format(self.ip),
                        params=payload)
 
-        json_response = r.json()
+        try:
+            json_response = r.json()
+        except JSONDecodeError as e:
+            log.warning('Could not decode JSON gracefully.')
+            log.warning(e)
+            log.warning('Forcing another method to decode JSON...')
+            json_response = loads(r.content, strict=False)
 
-        if json_response:
+        # log data only at simple requests. things get complicated otherwise.
+        if json_response and standart_request:
             log.info('get_cmd()')
             for command in cmd.split(','):
-                log.info('\t{}: {}'.format(command, json_response.get(command)))
+                log.info('\t{}: {}'.format(
+                    command, json_response.get(command)))
 
-        if multi_data:
+        if multi_data or not standart_request:
             return(json_response)
         else:
             # no need to return a json object when only one parameter is requested
@@ -133,7 +153,7 @@ class Superbox:
     def compose_AD(self):
         '''Calculate AD digest after retrieving the required parameters'''
 
-        params = self.get_cmd('RD', 'wa_inner_version', 'cr_version')
+        params = self.get_cmd({'RD', 'wa_inner_version', 'cr_version'})
 
         RD = params['RD']
         rd0 = params['wa_inner_version']
@@ -192,7 +212,7 @@ class Superbox:
         if auth_result == self.AuthenticationResult.success:
             # "wifi_lbd_enable" returns an empty response before login and
             # "1" after login, so we can use it for a lame login verification.
-            login_verified = self.get_cmd('wifi_lbd_enable') == '1'
+            login_verified = self.get_cmd({'wifi_lbd_enable'}) == '1'
 
             if not login_verified:
                 log.warning('Could not verify login.')
@@ -203,6 +223,10 @@ class Superbox:
             return(False)
 
     def get_all_sms(self):
+        print(self.get_cmd({'sms_data_total'},
+                           {'page': '0', 'data_per_page': '500',
+                            'mem_store': '1', 'tags': '10',
+                            'order_by': 'order+by+id+desc'}))
         return(1)
 
 

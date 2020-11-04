@@ -7,7 +7,7 @@ import requests
 from hashlib import md5
 from base64 import b64encode
 from simplejson.errors import JSONDecodeError
-from json import loads
+from json import loads, dumps
 
 p_desc = 'Automates some basic functionality of Turkcell Superbox'
 p_fmt = argparse.ArgumentDefaultsHelpFormatter
@@ -231,15 +231,29 @@ class Superbox:
         else:
             return(False)
 
-    def get_all_sms(self):
-        print(self.get_cmd({'sms_data_total'},
-                           {'page': '0', 'data_per_page': '500',
-                            'mem_store': '1', 'tags': '10',
-                            'order_by': 'order+by+id+desc'}))
-        return(1)
+    def get_sms(self, amount='500', tags='0'):
+        # maximum default amount was 500.
+        # amount must be a multiple of 10
 
+        # todo: decode content. hint: decodeMessage and hex2char @ util.js
+
+        raw_result = self.get_cmd({'sms_data_total'},
+                                  {'page': '0', 'data_per_page': amount,
+                                   'mem_store': '1', 'tags': tags,
+                                   'order_by': 'order+by+id+desc'})
+        result = raw_result.get('messages')
+
+        if len(result):
+            log.info('get_sms()')
+            log.info(dumps(result, indent=4, sort_keys=True))
+
+        return(result)
 
 if __name__ == '__main__':
     superbox = Superbox(args.router_ip, args.username,
                         args.password, args.verbose)
-    messages = superbox.get_all_sms()
+
+    # messages = superbox.get_sms(Superbox.SMSType.read)
+    # messages = superbox.get_sms(Superbox.SMSType.unread)
+    # messages = superbox.get_sms(Superbox.SMSType.sent)
+    messages = superbox.get_sms('10', Superbox.SMSType.all)

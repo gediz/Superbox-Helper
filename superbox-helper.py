@@ -69,6 +69,15 @@ class Superbox:
         success = '0'
         wrong_credentials_or_temporary_ban = '1'
 
+    class SMSType:
+        '''Possible values for SMS \"tags\"
+
+        Found by trial and error. These are not confirmed values.'''
+        read = '0'
+        unread = '1'
+        sent = '2'
+        all = '10'
+
     def print_input_args(self):
         print(art)
         log.info('Input arguments')

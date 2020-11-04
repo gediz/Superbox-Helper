@@ -87,7 +87,6 @@ class Superbox:
 
     def initiate_session(self):
         '''Initiate a requests session and execute a basic test.'''
-        self.login_cookie = None
         self.router_URL = 'http://{}'.format(self.ip)
 
         self.s = requests.Session()

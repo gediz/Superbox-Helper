@@ -159,6 +159,18 @@ class Superbox:
             # no need to return a json object when only one parameter is requested
             return(json_response.get(cmd))
 
+    def set_cmd(self, goformId: str, payload: set):
+        # re-auth. idk why it is necessary.
+        self.authenticate()
+
+        payload.update(
+            {'isTest': 'false', 'goformId': goformId, 'AD': self.AD})
+        print(payload)
+        r = self.s.post('http://{}/goform/goform_set_cmd_process'.format(self.ip),
+                        data=payload)
+
+        return(r)
+
     def compose_AD(self):
         '''Calculate AD digest after retrieving the required parameters'''
 

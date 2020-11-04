@@ -261,6 +261,24 @@ class Superbox:
 
         return(result)
 
+    def remove_sms(self, ids: set):
+        n = ';'.join(ids) + ';'
+        payload = {'msg_id': n, 'notCallback': 'true'}
+        raw_result = self.set_cmd('DELETE_SMS', payload)
+        result = raw_result.json().get('result')
+
+        log.info('remove_sms()')
+        log.info('\tn: "{}"'.format(n))
+        log.info('\tresult: {}'.format(result))
+
+        if result == 'success':
+            return(True)
+        elif result == 'failure':
+            return(False)
+        else:
+            return(None)
+
+
 if __name__ == '__main__':
     superbox = Superbox(args.router_ip, args.username,
                         args.password, args.verbose)
@@ -269,3 +287,4 @@ if __name__ == '__main__':
     # messages = superbox.get_sms(Superbox.SMSType.unread)
     # messages = superbox.get_sms(Superbox.SMSType.sent)
     messages = superbox.get_sms('10', Superbox.SMSType.all)
+    # messages = superbox.remove_sms({'152', '154', '155'})
